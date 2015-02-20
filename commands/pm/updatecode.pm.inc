@@ -29,7 +29,7 @@ function drush_pm_updatecode() {
   // Print report of modules to update, and record
   // result of that function in $update_info.
   $updatestatus_options = array();
-  foreach (array('lock', 'unlock', 'lock-message', 'update-backend', 'check-disabled', 'security-only') as $option) {
+  foreach (array('lock', 'unlock', 'lock-message', 'update-backend', 'check-disabled', 'security-only', 'not-supported') as $option) {
     $value = drush_get_option($option, FALSE);
     if ($value) {
       $updatestatus_options[$option] = $value;
@@ -96,8 +96,14 @@ function drush_pm_updatecode() {
   // If there are no releases to update, then print a final
   // exit message.
   if (empty($update_info)) {
-    if (drush_get_option('security-only')) {
-      return drush_log(dt('No security updates available.'), 'ok');
+    if (drush_get_option('security-only') || drush_get_option('not-supported')) {
+      if (drush_get_option('not-supported')) {
+        drush_log(dt('No Unsupported Modules.'), 'ok');
+      }
+      if (drush_get_option('security-only')) {
+        drush_log(dt('No security updates available.'), 'ok');
+      }
+      return;
     }
     else {
       return drush_log(dt('No code updates available.'), 'ok');

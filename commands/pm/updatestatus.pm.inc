@@ -191,7 +191,7 @@ function drush_pm_updatestatus() {
   }
 
   // Filter projects to show.
-  return pm_project_filter($update_info, drush_get_option('security-only'));
+  return pm_project_filter($update_info, drush_get_option('security-only'), drush_get_option('not-supported'));
 }
 
 /**
@@ -201,16 +201,22 @@ function drush_pm_updatestatus() {
  *   Update info for projects.
  * @param bool $security_only
  *   Whether to select only projects with security updates.
+ * @param bool $show_not_supported
+ *   Whether to select not supported projects in addition to other params
+ *   This will add these IN ADDITION to security_only if specified
  *
  * @return
  *   Array of projects matching filter criteria.
  */
-function pm_project_filter($update_info, $security_only) {
+function pm_project_filter($update_info, $security_only, $not_supported) {
   $eligible = array();
   foreach ($update_info as $key => $project) {
-    if ($security_only) {
-      if ($project['status'] == DRUSH_UPDATESTATUS_NOT_SECURE) {
+    if ($security_only || $not_supported) {
+      if ($security_only && $project['status'] == DRUSH_UPDATESTATUS_NOT_SECURE) {
         $eligible[$key] = $project;
+      }
+      if ($not_supported && $project['status'] == DRUSH_UPDATESTATUS_NOT_SUPPORTED) {
+          $eligible[$key] = $project;
       }
     }
     elseif (drush_get_context('DRUSH_VERBOSE')) {
